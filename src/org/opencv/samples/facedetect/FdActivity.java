@@ -26,17 +26,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    public static final int        JAVA_DETECTOR       = 0;
 
     private Mat                    mRgba;
     private Mat                    mGray;
     private File                   mCascadeFile;
-    private CascadeClassifier      mJavaDetector;
+    private CascadeClassifier      mFaceDetector;
 
-    private int                    mDetectorType       = JAVA_DETECTOR;
-    private String[]               mDetectorName;
-
-    private float                  mRelativeFaceSize   = 0.2f;
+    private float                  mRelativeFaceSize   = 0.25f;
     private int                    mAbsoluteFaceSize   = 0;
 
     private CameraBridgeViewBase   mOpenCvCameraView;
@@ -52,25 +48,20 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	// Load native library after(!) OpenCV initialization
                 	System.loadLibrary("detection_based_tracker");
 
-                	try {
-                		// load cascade file from application resources
-                		File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                		mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
 
-                		mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                		if (mJavaDetector.empty()) {
-                			Log.e(TAG, "Failed to load cascade classifier");
-                			mJavaDetector = null;
-                		} else {
-                			Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
-                		}
-                			
-                		cascadeDir.delete();
+                	// load cascade file from application resources
+                	File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+                	mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
 
-                	} catch (Exception e) {
-                		e.printStackTrace();
-                		Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                	mFaceDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+                	if (mFaceDetector.empty()) {
+                		Log.e(TAG, "Failed to load cascade classifier");
+                		mFaceDetector = null;
+                	} else {
+                		Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
                 	}
+
+                	cascadeDir.delete();
 
                     mOpenCvCameraView.enableView();
                 } break;
@@ -83,8 +74,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     };
 
     public FdActivity() {
-        mDetectorName = new String[2];
-        mDetectorName[JAVA_DETECTOR] = "Java";
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -135,22 +124,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	mRgba = inputFrame.rgba();        	
     	mGray = inputFrame.gray();
 
-    	if (mAbsoluteFaceSize == 0) {
-    		int height = mGray.rows();
-    		if (Math.round(height * mRelativeFaceSize) > 0) {
-    			mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-    		}
-    	}
+    	mAbsoluteFaceSize = Math.round(mGray.rows() * mRelativeFaceSize);
 
     	MatOfRect faces = new MatOfRect();
 
-    	if (mDetectorType == JAVA_DETECTOR) {
-    		if (mJavaDetector != null) {
-    			mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-    		}
+    	if (mFaceDetector != null) {
+    			mFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
     	}
     	else {
-    		Log.e(TAG, "Detection method is not selected!");
+    		Log.e(TAG, "Detection Initialization Failed!");
     	}
 
     	Rect[] facesArray = faces.toArray();
