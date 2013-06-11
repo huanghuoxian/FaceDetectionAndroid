@@ -34,9 +34,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private float                  mRelativeFaceSize   = 0.25f;
     private int                    mAbsoluteFaceSize   = 0;
+    
+    public static boolean          mIsLooking = false;
 
+    /*
+    private JavaCameraBallView   mOpenCvCameraView;
+    /*/
     private CameraBridgeViewBase   mOpenCvCameraView;
-
+    //*/
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -48,19 +53,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	// Load native library after(!) OpenCV initialization
                 	System.loadLibrary("detection_based_tracker");
 
-
                 	// load cascade file from application resources
                 	File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                 	mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
 
                 	mFaceDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
                 	if (mFaceDetector.empty()) {
-                		Log.e(TAG, "Failed to load cascade classifier");
+                		Log.e(TAG, "Failed to load cascade classifier!");
                 		mFaceDetector = null;
                 	} else {
                 		Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
                 	}
-
                 	cascadeDir.delete();
 
                     mOpenCvCameraView.enableView();
@@ -86,7 +89,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         setContentView(R.layout.face_detect_surface_view);
 
+        //*
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+        /*/
+        mOpenCvCameraView = (JavaCameraBallView) findViewById(R.id.fd_activity_surface_view);
+        mOpenCvCameraView.setActivity(this);
+        //*/
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
 
@@ -121,11 +129,60 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-    	mRgba = inputFrame.rgba();        	
+    	//Landscape Version
+    	mRgba = inputFrame.rgba();
     	mGray = inputFrame.gray();
+        
+        mAbsoluteFaceSize = Math.round(mGray.rows() * mRelativeFaceSize);
+        
+    	MatOfRect faces = new MatOfRect();
 
-    	mAbsoluteFaceSize = Math.round(mGray.rows() * mRelativeFaceSize);
+    	if (mFaceDetector != null) {
+    			mFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+    	}
+    	else {
+    		Log.e(TAG, "Detection Initialization Failed!");
+    		System.exit(0);
+    	}
+    	
+    	Rect[] facesArray = faces.toArray();
 
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	
+    	if(facesArray.length > 0)
+    	{
+    		mIsLooking = true;
+    	}
+    	else
+    	{
+    		mIsLooking = false;
+    	}
+    	
+    	for (int i = 0; i < facesArray.length; i++) {
+    		Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+    	}
+
+    	//Core.transpose(mRgba, mRgba);
+    	Core.flip(mRgba, mRgba, 1);
+    	return mRgba;
+    	
+        
+    	/*
+    	//Portrait Version
+    	mRgba = inputFrame.rgba();
+    	mGray = inputFrame.gray();
+    	
+        Core.flip(mGray.t(), mGray, 0);
+        
+        mAbsoluteFaceSize = Math.round(mGray.rows() * mRelativeFaceSize);
+        
     	MatOfRect faces = new MatOfRect();
 
     	if (mFaceDetector != null) {
@@ -136,10 +193,49 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	}
 
     	Rect[] facesArray = faces.toArray();
+    	
     	for (int i = 0; i < facesArray.length; i++) {
     		Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
     	}
 
+    	//Core.transpose(mRgba, mRgba);
+    	Core.flip(mRgba, mRgba, 1);
+    	
     	return mRgba;
+    	*/
+    }
+    
+    public void detectFaces(Mat frame) {
+    	mAbsoluteFaceSize = Math.round(frame.rows() * mRelativeFaceSize);
+        
+    	MatOfRect faces = new MatOfRect();
+
+    	if (mFaceDetector != null) {
+    			mFaceDetector.detectMultiScale(frame, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+    	}
+    	else {
+    		Log.e(TAG, "Detection Initialization Failed!");
+    		System.exit(0);
+    	}
+    	
+    	Rect[] facesArray = faces.toArray();
+
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
+    	
+    	if(facesArray.length > 0)
+    	{
+    		mIsLooking = true;
+    	}
+    	else
+    	{
+    		mIsLooking = false;
+    	}
     }
 }
