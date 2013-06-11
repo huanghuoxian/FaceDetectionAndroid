@@ -35,9 +35,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private float                  mRelativeFaceSize   = 0.25f;
     private int                    mAbsoluteFaceSize   = 0;
     
-    public static boolean          mIsLooking = false;
+    public boolean                 mIsLooking = false;
 
-    /*
+    //*
     private JavaCameraBallView   mOpenCvCameraView;
     /*/
     private CameraBridgeViewBase   mOpenCvCameraView;
@@ -89,7 +89,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         setContentView(R.layout.face_detect_surface_view);
 
-        //*
+        /*
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         /*/
         mOpenCvCameraView = (JavaCameraBallView) findViewById(R.id.fd_activity_surface_view);
@@ -147,15 +147,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	
     	Rect[] facesArray = faces.toArray();
 
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	
     	if(facesArray.length > 0)
     	{
     		mIsLooking = true;
@@ -219,15 +210,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	}
     	
     	Rect[] facesArray = faces.toArray();
-
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
-    	Log.i("FACE", "FACE ARRAY SIZE: " + facesArray.length);
     	
     	if(facesArray.length > 0)
     	{
