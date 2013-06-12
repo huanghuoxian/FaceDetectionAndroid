@@ -33,7 +33,7 @@ public class Ball extends SurfaceView implements SurfaceHolder.Callback {
 		setPosition = true;
 		
 		getHolder().addCallback(this);
-		ballThread = new BallThread(getHolder(), this);
+		//ballThread = new BallThread(getHolder(), this);
 	}
 
 	protected void onDraw(Canvas canvas) {
@@ -93,13 +93,13 @@ public class Ball extends SurfaceView implements SurfaceHolder.Callback {
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		ballThread.setRunnable(true);
+		//ballThread.setRunnable(true);
 		ballThread.start();
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		boolean retry = true;
-		ballThread.setRunnable(false);
+		//ballThread.setRunnable(false);
 		while(retry) {
 			try {
 				ballThread.join();

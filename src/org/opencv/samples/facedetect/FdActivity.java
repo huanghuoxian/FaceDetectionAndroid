@@ -146,15 +146,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	}
     	
     	Rect[] facesArray = faces.toArray();
-
-    	if(facesArray.length > 0)
-    	{
-    		mIsLooking = true;
-    	}
-    	else
-    	{
-    		mIsLooking = false;
-    	}
     	
     	for (int i = 0; i < facesArray.length; i++) {
     		Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
@@ -213,11 +204,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	
     	if(facesArray.length > 0)
     	{
-    		mIsLooking = true;
+    		setIsLooking(true);
     	}
     	else
     	{
-    		mIsLooking = false;
+    		setIsLooking(false);
     	}
+    }
+    
+    public synchronized boolean getIsLooking() {
+    	return mIsLooking;
+    }
+    
+    public synchronized void setIsLooking(boolean b) {
+    	mIsLooking = b;
     }
 }

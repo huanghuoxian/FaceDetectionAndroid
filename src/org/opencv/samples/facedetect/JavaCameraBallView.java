@@ -11,10 +11,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.hardware.Camera;
+import android.view.SurfaceHolder;
 
-public class JavaCameraBallView extends JavaCameraView implements Camera.PreviewCallback{
-	private Bitmap mainBitmap;
-	private Bitmap tailBitmap;
+public class JavaCameraBallView extends JavaCameraView implements Camera.PreviewCallback, SurfaceHolder.Callback{
+	private BallThread ballThread;
     private FdActivity act;
     private boolean firstTime;
     private Circle mainBall;
@@ -24,34 +24,16 @@ public class JavaCameraBallView extends JavaCameraView implements Camera.Preview
 	public JavaCameraBallView(android.content.Context context, android.util.AttributeSet attrs) {
 		super(context, attrs);
 		
-		mainBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_75);
-		tailBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_40);
-		
-		trail = new ArrayList<Circle>();
-		trailCounter = 0;
-		
-		firstTime = true;
+//		Bitmap mainBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_75);
+//		Bitmap tailBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_40);
 		
 		getHolder().addCallback(this);
-//		ballThread = new BallThread(getHolder(), this);
 	}
 	
 	@Override
 	public void onPreviewFrame(byte[] frame, Camera cam) {
 		mCamera.setPreviewCallback(this);
-		Canvas canvas = this.getHolder().lockCanvas();
-		
-		if(firstTime)
-		{
-			//set up ball
-			int mainDiam = 75;
-			int startX = canvas.getWidth() / 2 - mainDiam / 2;
-			int startY = canvas.getHeight() / 2 - mainDiam / 2;
-			int xVel = 9;
-			int yVel = 7;
-			mainBall = new Circle(startX, startY, xVel, yVel, mainDiam, canvas.getWidth(), canvas.getHeight(), mainBitmap);
-			firstTime = false;
-		}
+//		Canvas canvas = this.getHolder().lockCanvas();
 		
 		//face detection
 		Mat grayFrame = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
@@ -59,50 +41,76 @@ public class JavaCameraBallView extends JavaCameraView implements Camera.Preview
 		grayFrame = grayFrame.submat(0, mFrameHeight, 0, mFrameWidth);
 		act.detectFaces(grayFrame);
 		
-		int tailDiam = 40;
-		int tailX = mainBall.x + mainBall.diam / 2 - tailDiam / 2;
-		int tailY = mainBall.y + mainBall.diam / 2 - tailDiam / 2;
+//		int tailDiam = 40;
+//		int tailX = mainBall.x + mainBall.diam / 2 - tailDiam / 2;
+//		int tailY = mainBall.y + mainBall.diam / 2 - tailDiam / 2;
 		
-		//add trail if not looking and replay trail/do nothing if looking
-		if(act.mIsLooking) {
-			if(trailCounter >= 3)
-			{
-				if(trail.size() > 0) {
-					trail.add(new Circle(tailX, tailY, 0, 0, tailDiam, canvas.getWidth(), canvas.getHeight(), tailBitmap));
-				}
-				trailCounter = 0;
-			}
-			
-			int i = 0;
-			while(i < 2 && !trail.isEmpty()) {
-				trail.remove(0);
-				i++;
-			}
-		} 
-		else {
-			//add tail because not looking
-			if(trailCounter >= 3)
-			{
-				trail.add(new Circle(tailX, tailY, 0, 0, tailDiam, canvas.getWidth(), canvas.getHeight(), tailBitmap));
-				trailCounter = 0;
-			}
-		}
-		trailCounter++;
+//		//add trail if not looking and replay trail/do nothing if looking
+//		if(act.getIsLooking()) {
+//			if(trailCounter >= 3)
+//			{
+//				if(trail.size() > 0) {
+//					trail.add(new Circle(tailX, tailY, 0, 0, tailDiam, canvas.getWidth(), canvas.getHeight(), tailBitmap));
+//				}
+//				trailCounter = 0;
+//			}
+//			
+//			int i = 0;
+//			while(i < 2 && !trail.isEmpty()) {
+//				trail.remove(0);
+//				i++;
+//			}
+//		} 
+//		else {
+//			//add tail because not looking
+//			if(trailCounter >= 3)
+//			{
+//				trail.add(new Circle(tailX, tailY, 0, 0, tailDiam, canvas.getWidth(), canvas.getHeight(), tailBitmap));
+//				trailCounter = 0;
+//			}
+//		}
+//		trailCounter++;
+//		
+//		canvas.drawColor(Color.BLACK);
+//		
+//		//draw all of tail
+//		for(Circle currTail: trail) {
+//			currTail.draw(canvas);
+//		}
+//		
+//		mainBall.draw(canvas);
+//		mainBall.update();
 		
-		canvas.drawColor(Color.BLACK);
-		
-		//draw all of tail
-		for(Circle currTail: trail) {
-			currTail.draw(canvas);
-		}
-		
-		mainBall.draw(canvas);
-		mainBall.update();
-		
-        getHolder().unlockCanvasAndPost(canvas);
+//        getHolder().unlockCanvasAndPost(canvas);
 	}
 	
 	public void setActivity(FdActivity f) {
 		act = f;
+	}
+	
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,int height) {
+	}
+
+	public void surfaceCreated(SurfaceHolder holder) {
+		Bitmap mainBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_75);
+		Bitmap tailBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.red_ball_40);
+		ballThread.start();
+		ballThread = new BallThread(this.getHolder(), mainBitmap, tailBitmap);
+		ballThread.setActivity(act);
+	}
+
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		boolean retry = true;
+		ballThread.quit();
+		while(retry) {
+			try {
+				ballThread.join();
+				retry = false;
+			} catch(InterruptedException ie) {
+				//Try again and again and again
+			}
+			break;
+		}
+		ballThread = null;
 	}
 }
