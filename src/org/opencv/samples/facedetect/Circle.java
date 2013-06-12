@@ -4,11 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class Circle {
+	protected int diam;
 	protected int x;
 	protected int y;
 	private int xVel;
 	private int yVel;
-	private int diam;
 	private int screenWidth;
 	private int screenHeight;
 	private Bitmap bitmap;
